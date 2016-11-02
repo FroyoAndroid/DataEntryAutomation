@@ -9,7 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "chromedriver": "*",
     "selenium-webdriver": "^3.0.0-beta-3",
-    "chromedriver": "*"  
+    "xlsx": "^0.8.0"
   }
 }
