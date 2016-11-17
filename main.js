@@ -78,50 +78,103 @@ var decodeVIN = function () {
   driver.findElement(By.id('ctl00_ContentPlaceHolder1_FormView1_decodeCallback_ASPxButton2_B')).click();
 }
 
-var addSellerNote = function(sellerNotes){
+var addSellerNote = function (sellerNotes) {
   var txtAreaID = 'ctl00_ContentPlaceHolder1_FormView1_txtSellerNotes_I';
-  driver.findElement(By.id(txtAreaID)).sendKeys(sellerNotes); 
+  driver.findElement(By.id(txtAreaID)).sendKeys(sellerNotes);
 }
 
-var addVehicleDisclaimer = function(disclaimer) {
+var addVehicleDisclaimer = function (disclaimer) {
   var txtAreaID = 'ctl00_ContentPlaceHolder1_FormView1_decodeCallback_ASPxButton2_B';
   driver.findElement(By.id(txtAreaID)).sendKeys(disclaimer);
 }
 
-var addvehicleCost = function(cost) {
+var addvehicleCost = function (cost) {
   var inputID = 'ctl00_ContentPlaceHolder1_FormView1_txtCost_I';
   driver.findElement(By.id(inputID)).sendKeys(cost);
 }
 
-var  addWholeSalePrice= function(wholePrice){
+var addWholeSalePrice = function (wholePrice) {
   var inputID = 'ctl00_ContentPlaceHolder1_FormView1_txtWholesale_I';
   var checkID = 'ctl00_ContentPlaceHolder1_FormView1_cbIncludeInWholesaleCommunity_S_D';
   driver.findElement(By.id(inputID)).sendKeys(wholePrice);
   driver.findElement(By.id(checkID)).click();
 }
 
-var  addRetailPrice = function(retailrice){
+var addRetailPrice = function (retailrice) {
   var inputID = 'ctl00_ContentPlaceHolder1_FormView1_txtRetail_I';
   driver.findElement(By.id(inputID)).sendKeys(retailrice);
 }
 
+var addStockNo = function (stockNo) {
+  var inputID = 'ctl00_ContentPlaceHolder1_FormView1_txtRetail_I';
+  driver.findElement(By.id(inputID)).sendKeys(stockNo);
+}
+
+var addCylinder = function (cylinder) {
+  var inputID = 'ctl00_ContentPlaceHolder1_FormView1_cboCylinders_I';
+  driver.findElement(By.id(inputID)).sendKeys(cylinder);
+}
+var addExteriorColor = function (color) {
+  var inputID = 'ctl00_ContentPlaceHolder1_FormView1_cboColor_I';
+  driver.findElement(By.id(inputID)).sendKeys(color);
+}
+var addMileage = function (mileage) {
+  var inputID = 'ctl00_ContentPlaceHolder1_FormView1_txtMileage_I';
+  driver.findElement(By.id(inputID)).sendKeys(mileage);
+}
+
 // Testing goes here
+/*
 writeVIN('5FRYD3H43EB012831').then(function(){
   console.log('click');
   setTimeout(function() {
     decodeVIN();
-  }, 300);
+  }, 8000);
 });
 
 //test adding sellerNotes
 addSellerNote('Testing');
+*/
 
+var addRow = function (data) {
+  writeVIN(data.VIN).then(function () {
+    setTimeout(function () {
+      decodeVIN();
+    }, 8000);
+  });
+
+  addMileage(data.Mileage);
+
+  addCylinder(data.Cylinder);
+
+  addExteriorColor(data['Exterior Color']);
+
+  addWholeSalePrice(data['Wholesale Price']);
+
+  addvehicleCost(data['Vehicle Cost']);
+
+  addRetailPrice(data['Retail Price']);
+
+  addSellerNote(data['Sellers Notes']);
+
+  addVehicleDisclaimer(data['Vehicle Disclaimer']);
+
+  addStockNo(data['Stock #']);
+}
 
 // Write operation
-// data.map(function(key,value){
-//   console.log('Writing entry no :', value);
-//   writeVIN(key.VIN);
-// });
+data.map(function (key, value) {
+  console.log('Writing entry no :', value);
+  if(value === 0)
+    addRow(key);
+
+  /*writeVIN(key.VIN).then(function () {
+    console.log('click');
+    setTimeout(function () {
+      decodeVIN();
+    }, 8000);
+  });*/
+});
 
 // driver.wait(until.titleIs('webdriver - Google Search'), 1000);
 
