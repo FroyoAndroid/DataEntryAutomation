@@ -1,17 +1,18 @@
 'use strict';
 
 var webdriver = require('selenium-webdriver'),
-  chrome = require('selenium-webdriver/chrome'),
-  chromedriver = require('chromedriver'),
-  fs = require('fs'),
-  By = webdriver.By,
-  until = webdriver.until,
-  XLSX = require('xlsx'),
-  workbook = XLSX.readFile('excel/test.xls');
+    chrome = require('selenium-webdriver/chrome'),
+    chromedriver = require('chromedriver'),
+    fs = require('fs'),
+    By = webdriver.By,
+    until = webdriver.until,
+    XLSX = require('xlsx'),
+    workbook = XLSX.readFile('excel/test.xls'),
+    decodeTimer = 8000;
 
 var driver = new webdriver.Builder()
-  .forBrowser('chrome')
-  .build();
+    .forBrowser('chrome')
+    .build();
 
 driver.get('https://www.dealercarsearch.com/');
 driver.findElement(By.name('txtUsername')).sendKeys('tempuser1');
@@ -24,58 +25,58 @@ driver.get('https://www.dealercarsearch.com/myaccount/addvehicle.aspx');
 var sheet_name_list = workbook.SheetNames;
 var data = []; //  Data to be entered
 
-sheet_name_list.forEach(function (y) {
-  var worksheet = workbook.Sheets[y];
-  var headers = {};
+sheet_name_list.forEach(function(y) {
+    var worksheet = workbook.Sheets[y];
+    var headers = {};
 
-  for (var z in worksheet) {
-    if (z[0] === '!') continue;
-    //parse out the column, row, and value
-    var tt = 0;
-    for (var i = 0; i < z.length; i++) {
-      if (!isNaN(z[i])) {
-        tt = i;
-        break;
-      }
-    };
-    var col = z.substring(0, tt);
-    var row = parseInt(z.substring(tt));
-    var value = worksheet[z].v;
+    for (var z in worksheet) {
+        if (z[0] === '!') continue;
+        //parse out the column, row, and value
+        var tt = 0;
+        for (var i = 0; i < z.length; i++) {
+            if (!isNaN(z[i])) {
+                tt = i;
+                break;
+            }
+        };
+        var col = z.substring(0, tt);
+        var row = parseInt(z.substring(tt));
+        var value = worksheet[z].v;
 
-    //store header names
-    if (row == 1 && value) {
-      headers[col] = value;
-      continue;
+        //store header names
+        if (row == 1 && value) {
+            headers[col] = value;
+            continue;
+        }
+
+        if (!data[row]) data[row] = {};
+        data[row][headers[col]] = value;
     }
-
-    if (!data[row]) data[row] = {};
-    data[row][headers[col]] = value;
-  }
-  //drop those first three rows which are empty
-  data.shift();
-  data.shift();
-  data.shift();
-  /*
-    fs.writeFile("excel/test-json.json", JSON.stringify(data), function (err) {
-      if (err) {
-        return console.log(err);
-      }
+    //drop those first three rows which are empty
+    data.shift();
+    data.shift();
+    data.shift();
+    /*
+      fs.writeFile("excel/test-json.json", JSON.stringify(data), function (err) {
+        if (err) {
+          return console.log(err);
+        }
   
-      console.log("The file was saved!");
-    });
-    */
+        console.log("The file was saved!");
+      });
+      */
 
 
 });
 
-var writeVIN = function (VIN) {
-  // VIN entry
-  return driver.findElement(By.id('ctl00_ContentPlaceHolder1_FormView1_decodeCallback_txtVIN_I')).sendKeys(VIN);
+var writeVIN = function(VIN) {
+    // VIN entry
+    return driver.findElement(By.id('ctl00_ContentPlaceHolder1_FormView1_decodeCallback_txtVIN_I')).sendKeys(VIN);
 }
 
-var decodeVIN = function () {
-  var decodeVinId = 'ctl00_ContentPlaceHolder1_FormView1_decodeCallback_ASPxButton2_CD';
-  driver.findElement(By.id('ctl00_ContentPlaceHolder1_FormView1_decodeCallback_ASPxButton2_B')).click();
+var decodeVIN = function() {
+    var decodeVinId = 'ctl00_ContentPlaceHolder1_FormView1_decodeCallback_ASPxButton2_CD';
+    driver.findElement(By.id('ctl00_ContentPlaceHolder1_FormView1_decodeCallback_ASPxButton2_B')).click();
 }
 
 var addSellerNote = function (sellerNotes) {
@@ -84,7 +85,7 @@ var addSellerNote = function (sellerNotes) {
 }
 
 var addVehicleDisclaimer = function (disclaimer) {
-  var txtAreaID = 'ctl00_ContentPlaceHolder1_FormView1_decodeCallback_ASPxButton2_B';
+  var txtAreaID = 'ctl00_ContentPlaceHolder1_FormView1_txtVehicleDisclaimer_I';
   driver.findElement(By.id(txtAreaID)).sendKeys(disclaimer);
 }
 
@@ -106,7 +107,7 @@ var addRetailPrice = function (retailrice) {
 }
 
 var addStockNo = function (stockNo) {
-  var inputID = 'ctl00_ContentPlaceHolder1_FormView1_txtRetail_I';
+  var inputID = 'ctl00_ContentPlaceHolder1_FormView1_txtStockNumber_I';
   driver.findElement(By.id(inputID)).sendKeys(stockNo);
 }
 
@@ -137,15 +138,16 @@ addSellerNote('Testing');
 */
 
 var addRow = function (data) {
-  writeVIN(data.VIN).then(function () {
-    setTimeout(function () {
-      decodeVIN();
-    }, 8000);
-  });
+  writeVIN(data.VIN);
+//   .then(function () {
+//     setTimeout(function () {
+//       decodeVIN();
+//     }, decodeTimer);
+//   });
 
-  addMileage(data.Mileage);
+  addMileage(data['Mileage']);
 
-  addCylinder(data.Cylinder);
+  addCylinder(data['Cylinders']);
 
   addExteriorColor(data['Exterior Color']);
 
@@ -160,21 +162,25 @@ var addRow = function (data) {
   addVehicleDisclaimer(data['Vehicle Disclaimer']);
 
   addStockNo(data['Stock #']);
+
+//   decodeVIN();
 }
 
-// Write operation
-data.map(function (key, value) {
-  console.log('Writing entry no :', value);
-  if(value === 0)
-    addRow(key);
+addRow(data[0]);
 
-  /*writeVIN(key.VIN).then(function () {
-    console.log('click');
-    setTimeout(function () {
-      decodeVIN();
-    }, 8000);
-  });*/
-});
+// Write operation
+// data.map(function (key, value) {
+//   console.log('Writing entry no :', value);
+//   if(value === 0)
+//     addRow(key);
+
+//   writeVIN(key.VIN).then(function () {
+//     console.log('click');
+//     setTimeout(function () {
+//       decodeVIN();
+//     }, 8000);
+//   });
+// });
 
 // driver.wait(until.titleIs('webdriver - Google Search'), 1000);
 
